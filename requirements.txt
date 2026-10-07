@@ -1,0 +1,11 @@
+Django>=4.2
+opencv-python>=4.8
+numpy>=1.24
+openpyxl>=3.1
+reportlab>=4.0
+cryptography>=41.0
+python-dotenv>=1.0
+PyMySQL>=1.1
+# Optional deep-learning backend (set FACE_BACKEND=torch in .env):
+# torch>=2.0
+# facenet-pytorch>=2.5

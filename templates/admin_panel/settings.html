@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block title %}Settings{% endblock %}{% block heading %}System Settings & Attendance Rules{% endblock %}
+{% block content %}<div class="card p-4" style="max-width:860px"><form method="post">{% csrf_token %}
+{% for s in items %}<div class="row mb-3 align-items-center"><label class="col-md-4 fw-semibold"><code>{{ s.key }}</code></label>
+<div class="col-md-3"><input class="form-control" name="{{ s.key }}" value="{{ s.value }}" inputmode="decimal"></div><div class="col-md-5 small text-muted">{{ s.description }}</div></div>{% endfor %}
+<button class="btn btn-primary">Save settings</button></form></div>{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block title %}{{ cfg.title }}{% endblock %}{% block heading %}{% if obj %}Edit{% else %}New{% endif %} - {{ cfg.title }}{% endblock %}
+{% block content %}<div class="card p-4" style="max-width:720px"><form method="post" novalidate>{% csrf_token %}
+{{ form.non_field_errors }}
+{% for f in form %}<div class="mb-3">{% if f.field.widget.input_type == 'checkbox' %}<div class="form-check">{{ f }} <label class="form-check-label" for="{{ f.id_for_label }}">{{ f.label }}</label></div>{% else %}<label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% endif %}
+{% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>{% endfor %}
+<button class="btn btn-primary">Save</button> <a class="btn btn-light" href="{% url 'crud_list' key %}">Cancel</a></form></div>{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% load core_extras %}{% block title %}My Dashboard{% endblock %}{% block heading %}Welcome, {{ st.user.first_name }}{% endblock %}
+{% block content %}
+<div class="row g-3 mb-3">
+ <div class="col-lg-4"><div class="card p-3 h-100"><h6>My profile</h6><table class="table table-sm mb-0">
+  <tr><th>Name</th><td>{{ st.name }}</td></tr><tr><th>Roll No</th><td>{{ st.roll_no }}</td></tr><tr><th>Course</th><td>{{ st.course }}</td></tr><tr><th>Semester</th><td>{{ st.semester }}</td></tr><tr><th>Email</th><td>{{ st.user.email }}</td></tr></table></div></div>
+ <div class="col-lg-4"><div class="card p-3 h-100"><h6>Registered biometrics</h6>
+  <div class="d-flex justify-content-between py-1"><span><i class="bi bi-person-bounding-box"></i> Face</span>{% if face_n %}<span class="badge text-bg-success">{{ face_n }} template(s)</span>{% else %}<span class="badge text-bg-secondary">Not registered</span>{% endif %}</div>
+  <div class="d-flex justify-content-between py-1"><span><i class="bi bi-eye"></i> Iris</span>{% if iris_n %}<span class="badge text-bg-success">{{ iris_n }} template(s)</span>{% else %}<span class="badge text-bg-secondary">Not registered</span>{% endif %}</div>
+  <div class="form-text mt-2"><i class="bi bi-shield-lock"></i> Only encrypted mathematical templates are stored - never your photos. Contact the admin to update or delete them.</div></div></div>
+ <div class="col-lg-4"><div class="card p-3 h-100 text-center"><h6>Overall attendance</h6><div class="display-4 fw-bold text-{{ overall|pct_class }}">{{ overall }}%</div>
+  {% if overall < min_pct %}<div class="alert alert-danger py-1 mt-2 mb-0 small">Below the required {{ min_pct|floatformat:0 }}%</div>{% else %}<div class="text-success small">Meets the required {{ min_pct|floatformat:0 }}%</div>{% endif %}</div></div>
+</div>
+<div class="card p-3 mb-3"><h6>Subject-wise attendance</h6><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Subject</th><th>P</th><th>L</th><th>A</th><th>E</th><th style="width:30%">Attendance</th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.subject }}</td><td>{{ r.P }}</td><td>{{ r.L }}</td><td>{{ r.A }}</td><td>{{ r.E }}</td>
+<td><div class="progress progress-thin mb-1"><div class="progress-bar bg-{{ r.percent|pct_class }}" style="width:{{ r.percent }}%"></div></div><small class="text-{{ r.percent|pct_class }}">{{ r.percent }}%{% if r.low %} - shortage!{% endif %}</small></td></tr>
+{% endfor %}</tbody></table></div></div>
+{% if preds %}<div class="card p-3 mb-3"><h6><i class="bi bi-cpu"></i> Predicted end-of-semester attendance</h6>
+<div class="row g-2">{% for p in preds %}<div class="col-md-3"><div class="border rounded p-2 small"><strong>{{ p.subject.code }}</strong><div class="fs-5 text-{{ p.projected|pct_class }}">{{ p.projected }}%</div>{% if p.at_risk %}<div class="text-danger">Attend {{ p.must_attend }} of next {{ p.remaining }} classes.</div>{% else %}<div class="text-success">On track</div>{% endif %}</div></div>{% endfor %}</div></div>{% endif %}
+<div class="row g-3"><div class="col-lg-7"><div class="card p-3"><h6>Attendance history</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Date</th><th>Time</th><th>Subject</th><th>Status</th><th>Conf.</th></tr></thead><tbody>
+{% for a in page %}<tr><td>{{ a.date }}</td><td>{{ a.time|default:"-" }}</td><td>{{ a.subject.code }}</td><td><span class="badge text-bg-{{ a.status|status_badge }}">{{ a.get_status_display }}</span></td><td>{% if a.confidence %}{% widthratio a.confidence 1 100 %}%{% endif %}</td></tr>{% empty %}<tr><td colspan="5" class="text-muted text-center">No records yet.</td></tr>{% endfor %}</tbody></table></div>{% include "partials/pagination.html" %}</div></div>
+<div class="col-lg-5"><div class="card p-3 mb-3"><h6>My timetable</h6><table class="table table-sm mb-0"><tbody>{% for t in slots %}<tr><td>{{ t.get_weekday_display|slice:":3" }}</td><td>{{ t.start_time|time:"H:i" }}-{{ t.end_time|time:"H:i" }}</td><td>{{ t.subject.code }}</td><td class="small text-muted">{{ t.classroom }}</td></tr>{% empty %}<tr><td class="text-muted">No timetable.</td></tr>{% endfor %}</tbody></table></div>
+<div class="card p-3"><h6>Notifications</h6>{% for n in notes %}<div class="alert alert-{{ n.level }} py-2 mb-2 small"><strong>{{ n.title }}</strong><br>{{ n.message }}</div>{% empty %}<span class="text-muted small">No notifications.</span>{% endfor %}</div></div></div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% load core_extras %}
+<div class="row g-3 mb-3">
+ {% for label, val, ic, col in stat_cards %}
+ <div class="col-6 col-lg-3"><div class="card stat-card p-3"><div class="d-flex justify-content-between align-items-center">
+  <div><div class="text-muted small">{{ label }}</div><div class="value">{{ val }}</div></div>
+  <div class="icon bg-{{ col }}-subtle text-{{ col }}"><i class="bi {{ ic }}"></i></div></div></div></div>
+ {% endfor %}
+</div>
+<div class="row g-3 mb-3">
+ <div class="col-lg-6"><div class="card p-3"><h6>Subject-wise attendance %</h6><canvas id="cSub" height="140"></canvas></div></div>
+ <div class="col-lg-6"><div class="card p-3"><h6>Monthly attendance trend</h6><canvas id="cMon" height="140"></canvas></div></div>
+ <div class="col-lg-6"><div class="card p-3"><h6>Absenteeism pattern by weekday</h6><canvas id="cDay" height="140"></canvas></div></div>
+ <div class="col-lg-6"><div class="card p-3"><h6>Today's status split</h6><canvas id="cToday" height="140"></canvas></div></div>
+</div>
+<div class="row g-3">
+ <div class="col-lg-6"><div class="card p-3"><h6><i class="bi bi-exclamation-triangle text-danger"></i> Low attendance students (&lt; {{ min_pct|floatformat:0 }}%)</h6>
+  <table class="table table-sm mb-0"><thead><tr><th>Roll</th><th>Name</th><th>Absent</th><th>%</th></tr></thead><tbody>
+  {% for r in low %}<tr><td>{{ r.student.roll_no }}</td><td>{{ r.student.name }}</td><td>{{ r.absent }}</td><td><span class="badge text-bg-{{ r.pct|pct_class }}">{{ r.pct }}%</span></td></tr>
+  {% empty %}<tr><td colspan="4" class="text-muted text-center">Nobody below the threshold.</td></tr>{% endfor %}</tbody></table></div></div>
+ <div class="col-lg-6"><div class="card p-3"><h6><i class="bi bi-cpu text-primary"></i> AI shortage prediction (projected end-of-semester %)</h6>
+  <table class="table table-sm mb-0"><thead><tr><th>Student</th><th>Subject</th><th>Recent</th><th>Projected</th><th>Need</th></tr></thead><tbody>
+  {% for r in risk %}<tr><td>{{ r.student.name }}</td><td>{{ r.subject.code }}</td><td>{{ r.recent_rate }}%</td><td><span class="badge text-bg-{{ r.projected|pct_class }}">{{ r.projected }}%</span></td>
+  <td>{% if r.feasible %}{{ r.must_attend }}/{{ r.remaining }}{% else %}<span class="text-danger">unreachable</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-muted text-center">No students predicted at risk.</td></tr>{% endfor %}</tbody></table>
+  <div class="form-text">Exponentially-weighted recent attendance rate projected over remaining planned classes.</div></div></div>
+</div>
+{{ subject_trend|json_script:"d_sub" }}{{ monthly|json_script:"d_mon" }}{{ weekday|json_script:"d_day" }}{{ ov.today|json_script:"d_today" }}
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const j=id=>JSON.parse(document.getElementById(id).textContent);
+ const sub=j('d_sub'),mon=j('d_mon'),day=j('d_day'),td=j('d_today');
+ const pal=['#4f46e5','#10b981','#f59e0b','#ef4444','#06b6d4','#8b5cf6'];
+ new Chart(cSub,{type:'bar',data:{labels:sub.map(x=>x.label),datasets:[{data:sub.map(x=>x.pct),backgroundColor:sub.map((x,i)=>pal[i%6])}]},options:{plugins:{legend:{display:false}},scales:{y:{min:0,max:100}}}});
+ new Chart(cMon,{type:'line',data:{labels:mon.map(x=>x.label),datasets:[{label:'Attendance %',data:mon.map(x=>x.pct),borderColor:'#4f46e5',tension:.3,fill:false},{label:'Absences',data:mon.map(x=>x.absent),borderColor:'#ef4444',yAxisID:'y1',tension:.3}]},options:{scales:{y:{min:0,max:100},y1:{position:'right',grid:{drawOnChartArea:false}}}}});
+ new Chart(cDay,{type:'bar',data:{labels:day.map(x=>x.label),datasets:[{label:'Absences',data:day.map(x=>x.absent),backgroundColor:'#f87171'}]},options:{plugins:{legend:{display:false}}}});
+ new Chart(cToday,{type:'doughnut',data:{labels:['Present','Late','Absent','Excused'],datasets:[{data:[td.P,td.L,td.A,td.E],backgroundColor:['#10b981','#f59e0b','#ef4444','#06b6d4']}]}});
+});
+</script>

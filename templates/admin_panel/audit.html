@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block title %}Audit{% endblock %}{% block heading %}Audit Log{% endblock %}
+{% block content %}<div class="card p-3"><form class="mb-3 d-flex gap-2"><input class="form-control" style="max-width:300px" name="q" value="{{ q }}" placeholder="Search action, user, target"><button class="btn btn-outline-primary">Search</button></form>
+<div class="table-responsive"><table class="table table-sm table-hover"><thead><tr><th>When</th><th>User</th><th>Action</th><th>Target</th><th>Details</th><th>IP</th></tr></thead><tbody>
+{% for a in page %}<tr><td class="text-nowrap">{{ a.created_at|date:"d M Y H:i:s" }}</td><td>{{ a.user|default:"-" }}</td><td><code>{{ a.action }}</code></td><td>{{ a.target }}</td><td class="small">{{ a.details|truncatechars:90 }}</td><td>{{ a.ip_address|default:"" }}</td></tr>{% endfor %}</tbody></table></div>
+{% include "partials/pagination.html" %}</div>{% endblock %}

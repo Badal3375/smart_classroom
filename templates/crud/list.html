@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% load core_extras %}{% block title %}{{ cfg.title }}{% endblock %}{% block heading %}{{ cfg.title }}{% endblock %}
+{% block content %}
+<div class="card p-3"><div class="d-flex flex-wrap gap-2 justify-content-between mb-3">
+<form class="d-flex flex-wrap gap-2" method="get">
+<input class="form-control" style="width:240px" name="q" value="{{ q }}" placeholder="Search...">
+{% if flt %}<select class="form-select" style="width:200px" name="f" onchange="this.form.submit()"><option value="">All {{ flt|title }}</option>{% for o in flt_opts %}<option value="{{ o.pk }}" {% if flt_val == o.pk|stringformat:'s' %}selected{% endif %}>{{ o }}</option>{% endfor %}</select>{% endif %}
+<button class="btn btn-outline-primary"><i class="bi bi-search"></i></button></form>
+<a class="btn btn-primary" href="{% url 'crud_new' key %}"><i class="bi bi-plus-lg"></i> Add</a></div>
+<div class="table-responsive"><table class="table table-hover align-middle">
+<thead><tr>{% for label, f in cfg.cols %}<th>{{ label }}</th>{% endfor %}<th class="text-end">Actions</th></tr></thead><tbody>
+{% for o in page %}<tr>{% for label, f in cfg.cols %}<td>{% with v=o|attr:f %}{% if v == True %}<span class="badge text-bg-success">Yes</span>{% elif v == False %}<span class="badge text-bg-secondary">No</span>{% else %}{{ v }}{% endif %}{% endwith %}</td>{% endfor %}
+<td class="text-end text-nowrap">{% if cfg.bio %}<a class="btn btn-sm btn-outline-success" title="Biometrics" href="{% url 'enroll' o.pk %}"><i class="bi bi-fingerprint"></i></a> {% endif %}
+<a class="btn btn-sm btn-outline-primary" href="{% url 'crud_edit' key o.pk %}"><i class="bi bi-pencil"></i></a>
+<a class="btn btn-sm btn-outline-danger" href="{% url 'crud_delete' key o.pk %}"><i class="bi bi-trash"></i></a></td></tr>
+{% empty %}<tr><td colspan="{{ cfg.cols|length|add:1 }}" class="text-center text-muted py-4">No records found.</td></tr>{% endfor %}
+</tbody></table></div>{% include "partials/pagination.html" %}</div>{% endblock %}

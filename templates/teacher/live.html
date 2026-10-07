@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% load static %}{% block title %}Live attendance{% endblock %}{% block heading %}Live: {{ s.subject.code }} · {{ s.classroom }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+ <div class="col-lg-7">
+  <div class="card p-3 mb-3">
+   <div class="video-box mb-2"><video id="video" playsinline muted></video><canvas id="overlay"></canvas>
+    {% if is_demo %}<div class="position-absolute top-50 start-50 translate-middle text-white-50 text-center"><i class="bi bi-camera-video-off fs-1"></i><div>Demo mode - simulated camera</div></div>{% endif %}</div>
+   <div class="d-flex flex-wrap gap-2">
+    {% if not is_demo %}<button id="btnCam" class="btn btn-primary"><i class="bi bi-camera-video"></i> Start camera</button>
+    <label class="btn btn-outline-secondary mb-0"><i class="bi bi-film"></i> Prerecorded video<input type="file" id="videoFile" accept="video/*" hidden></label>
+    <label class="btn btn-outline-secondary mb-0"><i class="bi bi-image"></i> Upload frame(s)<input type="file" id="imgFile" accept="image/*" multiple hidden></label>{% endif %}
+    {% if demo and is_demo %}
+    <button class="btn btn-success" data-demo="student"><i class="bi bi-person-check"></i> Simulate student</button>
+    <button class="btn btn-info text-white" data-demo="degraded"><i class="bi bi-eye"></i> Low-confidence face (iris fallback)</button>
+    <button class="btn btn-warning" data-demo="unknown"><i class="bi bi-person-x"></i> Unknown person</button>
+    <button class="btn btn-danger" data-demo="spoof"><i class="bi bi-image-alt"></i> Spoof attempt</button>
+    <button class="btn btn-outline-primary" id="btnAuto">Auto-simulate class</button>{% endif %}
+    <form method="post" action="{% url 'session_end' s.pk %}" class="ms-auto" onsubmit="return confirm('End session and mark remaining students absent?')">{% csrf_token %}<button class="btn btn-dark"><i class="bi bi-stop-circle"></i> End session</button></form>
+   </div>
+  </div>
+  <div class="card p-3"><h6>Recognition log</h6><div id="resultLog" style="max-height:300px;overflow:auto"></div></div>
+ </div>
+ <div class="col-lg-5">
+  <div class="row g-2 mb-3 text-center">
+   <div class="col-3"><div class="card p-2"><div class="fs-3 fw-bold text-success" id="cPresent">0</div><small>Present</small></div></div>
+   <div class="col-3"><div class="card p-2"><div class="fs-3 fw-bold text-warning" id="cLate">0</div><small>Late</small></div></div>
+   <div class="col-3"><div class="card p-2"><div class="fs-3 fw-bold text-danger" id="cAbsent">0</div><small>Absent</small></div></div>
+   <div class="col-3"><div class="card p-2"><div class="fs-3 fw-bold" id="cTotal">{{ total }}</div><small>Enrolled</small></div></div></div>
+  <div class="card p-3"><div class="progress progress-thin mb-1"><div id="bar" class="progress-bar bg-success" style="width:0"></div></div><small id="barTxt" class="text-muted mb-3"></small>
+   <h6 class="mt-2">Recognised students (real-time)</h6><div id="feedList" style="max-height:480px;overflow:auto"></div></div>
+ </div></div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/common.js' %}"></script>
+<script>window.LIVE_CFG={frameUrl:"{% url 'session_frame' s.pk %}",demoUrl:"{% url 'session_demo' s.pk %}",feedUrl:"{% url 'session_feed' s.pk %}"};</script>
+<script src="{% static 'js/live.js' %}"></script>{% endblock %}

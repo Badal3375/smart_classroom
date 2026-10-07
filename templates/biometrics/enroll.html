@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% load static %}{% block title %}Biometric registration{% endblock %}{% block heading %}Biometric Registration - {{ student.name }} ({{ student.roll_no }}){% endblock %}
+{% block content %}
+<div class="alert alert-info small"><i class="bi bi-shield-lock"></i> <strong>Privacy:</strong> images are processed in memory only. Only encrypted numeric templates (face embedding, binary iris code) are stored. Face backend: <code>{{ backend }}</code>.</div>
+<div class="row g-3"><div class="col-lg-6"><div class="card p-3"><h6>Capture</h6>
+ <div class="video-box mb-2"><video id="video" playsinline muted></video></div>
+ <button id="btnCam" class="btn btn-primary mb-2"><i class="bi bi-camera-video"></i> Start webcam</button>
+ <div id="capBtns" class="d-none d-flex gap-2"><button id="capFace" class="btn btn-success"><i class="bi bi-person-bounding-box"></i> Capture 5 face samples</button><button id="capIris" class="btn btn-info text-white"><i class="bi bi-eye"></i> Capture iris close-ups (3)</button></div>
+ <div class="form-text">Face: look at the camera, vary pose slightly. Iris: bring one eye close (≈10 cm), good lighting; an NIR iris camera gives best results.</div></div></div>
+<div class="col-lg-6"><div class="card p-3 mb-3"><h6>Status</h6>
+ <div class="d-flex justify-content-between"><span>Face templates</span><span class="badge text-bg-{% if face_count %}success{% else %}secondary{% endif %}">{{ face_count }}</span></div>
+ <div class="d-flex justify-content-between"><span>Iris templates</span><span class="badge text-bg-{% if iris_count %}success{% else %}secondary{% endif %}">{{ iris_count }}</span></div></div>
+<div class="card p-3 mb-3"><h6>Upload images instead</h6>
+ <label class="form-label small">Face photos (several)</label><input type="file" id="faceFile" class="form-control mb-1" accept="image/*" multiple>
+ {% if DEMO_MODE %}<div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="fallback"><label class="form-check-label small" for="fallback">Treat whole image as a face (demo/sample images)</label></div>{% endif %}
+ <div id="faceMsg"></div>
+ <label class="form-label small mt-2">Eye / iris close-ups</label><div class="input-group mb-1"><select id="eyeSide" class="form-select" style="max-width:130px"><option value="L">Left</option><option value="R">Right</option><option value="U">Unspecified</option></select><input type="file" id="irisFile" class="form-control" accept="image/*" multiple></div><div id="irisMsg"></div></div>
+<div class="card p-3"><h6>Other</h6><div class="d-flex flex-wrap gap-2">
+ {% if DEMO_MODE %}<form method="post" action="{% url 'enroll_demo' student.pk %}">{% csrf_token %}<button class="btn btn-outline-primary"><i class="bi bi-magic"></i> Generate demo biometrics</button></form>{% endif %}
+ <form method="post" action="{% url 'clear_biometrics' student.pk %}" onsubmit="return confirm('Delete all biometric templates for this student?')">{% csrf_token %}<button class="btn btn-outline-danger"><i class="bi bi-trash"></i> Delete all templates</button></form>
+ <a class="btn btn-light" href="{% url 'crud_list' 'students' %}">Back to students</a></div></div></div></div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/common.js' %}"></script>
+<script>window.ENROLL_CFG={faceUrl:"{% url 'enroll_face' student.pk %}",irisUrl:"{% url 'enroll_iris' student.pk %}"};</script><script src="{% static 'js/enroll.js' %}"></script>{% endblock %}

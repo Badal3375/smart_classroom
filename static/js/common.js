@@ -1,0 +1,5 @@
+function getCookie(n){return document.cookie.split('; ').find(r=>r.startsWith(n+'='))?.split('=')[1]||'';}
+async function postJSON(url,data){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},body:JSON.stringify(data)});return r.json();}
+async function postForm(url,fd){const r=await fetch(url,{method:'POST',headers:{'X-CSRFToken':getCookie('csrftoken')},body:fd});return r.json();}
+function grab(video,maxW=640,q=0.85){const c=document.createElement('canvas');const s=Math.min(1,maxW/(video.videoWidth||maxW));c.width=(video.videoWidth||maxW)*s;c.height=(video.videoHeight||480)*s;c.getContext('2d').drawImage(video,0,0,c.width,c.height);return {url:c.toDataURL('image/jpeg',q),w:c.width,h:c.height};}
+async function startCamera(video){try{const st=await navigator.mediaDevices.getUserMedia({video:{width:1280,height:720,facingMode:'user'},audio:false});video.srcObject=st;await video.play();return st;}catch(e){alert('Camera unavailable: '+e.message+'\nUse the upload / demo options instead.');return null;}}

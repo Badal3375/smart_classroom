@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load core_extras %}{% block title %}Session {{ s.pk }}{% endblock %}{% block heading %}{{ s.subject.code }} · {{ s.date }} · {{ s.classroom }}{% endblock %}
+{% block content %}<div class="card p-3 mb-3"><div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+<form class="d-flex gap-2"><input class="form-control" name="q" value="{{ q }}" placeholder="Search student"><button class="btn btn-outline-primary">Search</button></form>
+<div>{% if s.status == 'ACTIVE' %}<a class="btn btn-success" href="{% url 'session_live' s.pk %}">Open live view</a>{% endif %}</div></div>
+<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Roll</th><th>Student</th><th>Status</th><th>Time</th><th>Conf.</th><th>Method</th><th>Correct</th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.student.roll_no }}</td><td>{{ r.student.name }}</td>
+<td>{% if r.rec %}<span class="badge text-bg-{{ r.rec.status|status_badge }}">{{ r.rec.get_status_display }}</span>{% else %}<span class="badge text-bg-light text-dark">Pending</span>{% endif %}</td>
+<td>{{ r.rec.time|default:"-" }}</td><td>{% if r.rec.confidence %}{% widthratio r.rec.confidence 1 100 %}%{% endif %}</td><td class="small">{{ r.rec.method|default:"" }}</td>
+<td><button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#corr" data-sid="{{ r.student.pk }}" data-name="{{ r.student.name }}"><i class="bi bi-pencil"></i></button></td></tr>{% endfor %}</tbody></table></div></div>
+<div class="card p-3"><h6>Correction history</h6><table class="table table-sm mb-0"><tbody>{% for c in corrections %}<tr><td>{{ c.attendance.student.roll_no }}</td><td>{{ c.old_status }} → {{ c.new_status }}</td><td>{{ c.requested_by }}</td><td class="small">{{ c.reason }}</td><td>{{ c.status }}</td></tr>{% empty %}<tr><td class="text-muted">None.</td></tr>{% endfor %}</tbody></table></div>
+<div class="modal fade" id="corr"><div class="modal-dialog"><form class="modal-content" method="post" id="corrForm">{% csrf_token %}
+<div class="modal-header"><h6 class="modal-title">Authorised correction - <span id="cname"></span></h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body"><div class="mb-2"><label class="form-label">New status</label><select name="status" class="form-select">{% for v,l in statuses %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+<div class="mb-2"><label class="form-label">Reason (audited)</label><textarea name="reason" class="form-control" rows="2" required minlength="5"></textarea></div>
+<div class="mb-2"><label class="form-label">Re-enter your password to authorise</label><input type="password" name="password" class="form-control" required autocomplete="current-password"></div></div>
+<div class="modal-footer"><button class="btn btn-primary">Apply correction</button></div></form></div></div>
+{% endblock %}
+{% block scripts %}<script>document.getElementById('corr').addEventListener('show.bs.modal',e=>{const b=e.relatedTarget;cname.textContent=b.dataset.name;corrForm.action="{% url 'correction_request' s.pk 0 %}".replace(/0\/$/,b.dataset.sid+'/')});</script>{% endblock %}

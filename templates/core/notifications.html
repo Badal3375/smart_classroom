@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block title %}Notifications{% endblock %}{% block heading %}Notifications{% endblock %}
+{% block content %}<div class="card p-3"><form method="post" action="{% url 'notifications_read' %}" class="mb-2">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary">Mark all as read</button></form>
+{% for n in page %}<div class="alert alert-{{ n.level }} {% if not n.is_read %}border-start border-4{% endif %} mb-2"><div class="d-flex justify-content-between"><strong>{{ n.title }}</strong><small>{{ n.created_at|date:"d M H:i" }}</small></div>{{ n.message }}</div>
+{% empty %}<p class="text-muted text-center py-4">You're all caught up.</p>{% endfor %}{% include "partials/pagination.html" %}</div>{% endblock %}

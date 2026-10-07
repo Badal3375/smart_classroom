@@ -1,0 +1,3 @@
+{% extends "base.html" %}{% block heading %}Delete {{ cfg.title }}{% endblock %}
+{% block content %}<div class="card p-4" style="max-width:560px"><p>Permanently delete <strong>{{ obj }}</strong>? Related biometric templates and attendance will also be removed.</p>
+<form method="post">{% csrf_token %}<button class="btn btn-danger">Yes, delete</button> <a class="btn btn-light" href="{% url 'crud_list' key %}">Cancel</a></form></div>{% endblock %}

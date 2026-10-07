@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% load core_extras %}{% block title %}Corrections{% endblock %}{% block heading %}Attendance Corrections{% endblock %}
+{% block content %}<div class="card p-3"><div class="table-responsive"><table class="table align-middle"><thead><tr><th>When</th><th>Student</th><th>Subject / Date</th><th>Change</th><th>By</th><th>Reason</th><th>Status</th><th></th></tr></thead><tbody>
+{% for c in page %}<tr><td class="small">{{ c.created_at|date:"d M H:i" }}</td><td>{{ c.attendance.student }}</td><td>{{ c.attendance.subject.code }} · {{ c.attendance.date }}</td>
+<td><span class="badge text-bg-{{ c.old_status|status_badge }}">{{ c.old_status }}</span> → <span class="badge text-bg-{{ c.new_status|status_badge }}">{{ c.new_status }}</span></td><td>{{ c.requested_by }}</td><td class="small">{{ c.reason|truncatechars:60 }}</td>
+<td><span class="badge text-bg-{% if c.status == 'APPROVED' %}success{% elif c.status == 'PENDING' %}warning{% else %}secondary{% endif %}">{{ c.status }}</span></td>
+<td>{% if c.status == 'PENDING' %}<form method="post" class="d-flex gap-1">{% csrf_token %}<input type="hidden" name="id" value="{{ c.pk }}"><button name="action" value="approve" class="btn btn-sm btn-success">Approve</button><button name="action" value="reject" class="btn btn-sm btn-outline-danger">Reject</button></form>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No corrections yet.</td></tr>{% endfor %}</tbody></table></div>{% include "partials/pagination.html" %}</div>{% endblock %}
